@@ -1,0 +1,10 @@
+Package: shopr
+Type: Package
+Title: Connecting the Shopify API with R
+Version: 0.1.0
+Author: Ben Gorman
+Maintainer: Ben Gorman <bgorman@GormAnalysis.com>
+Description: The goal of this package is to make it easy to query data regarding a Shopify store from R
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
