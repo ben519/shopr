@@ -51,7 +51,7 @@ shopr_get_inventory_levels <- function(shopURL, APIKey, APIPassword, APIVersion 
 
   #--- Pagination --------------------------------------
 
-  pagesN <- min(999999, max_pages)
+  pagesN <- max(1L, min(999999, max_pages))
 
   #--- Request --------------------------------------
 

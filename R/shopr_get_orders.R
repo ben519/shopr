@@ -112,7 +112,7 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
   pagesRequired <- ceiling(ordersN/limit_per_page)
 
   # Determine how many pages to query
-  pagesN <- min(pagesRequired, max_pages)
+  pagesN <- max(1L, min(pagesRequired, max_pages))
 
   #--- Request --------------------------------------
 
@@ -180,6 +180,9 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
 
   # Collapse list of data.frames into a single data.table
   orders <- data.table::rbindlist(resultList, use.names = TRUE, fill = TRUE)
+
+  # If orders is a NULL data.table, exit this function early
+  if(all.equal(orders, data.table::data.table())) return(orders)
 
   # Extract internal data.frames (e.g. line_items) into into standalone data.tables
   colz <- data.frame(Col = colnames(orders))

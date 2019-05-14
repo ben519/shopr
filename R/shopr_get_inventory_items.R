@@ -52,7 +52,7 @@ shopr_get_inventory_items <- function(shopURL, APIKey, APIPassword, APIVersion =
 
   #--- Pagination --------------------------------------
 
-  pagesN <- pmin(max_pages, ceiling(length(ids_)/limit_per_page))
+  pagesN <- max(1L, min(max_pages, ceiling(length(ids_)/limit_per_page)))
 
   #--- Request --------------------------------------
 

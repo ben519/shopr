@@ -6,7 +6,7 @@
 \usage{
 shopr_get_inventory_levels(shopURL, APIKey, APIPassword,
   APIVersion = NULL, max_pages = Inf, limit_per_page = 250L,
-  inventory_item_ids = NULL, location_ids = NULL,
+  page = 1L, inventory_item_ids = NULL, location_ids = NULL,
   updated_at_min = NULL, verbose = FALSE)
 }
 \arguments{
@@ -21,6 +21,8 @@ shopr_get_inventory_levels(shopURL, APIKey, APIPassword,
 \item{max_pages}{max number of pages of orders to return. (default = \code{Inf})}
 
 \item{limit_per_page}{max number of results to return per request. Should be in the range [1, 250]. (default = 250)}
+
+\item{page}{initial page of results to return. (default = 1)}
 
 \item{inventory_item_ids}{inventory item ids. At least one of \code{inventory_item_ids} and \code{location_ids} must
 be provided. (default = \code{NULL})}

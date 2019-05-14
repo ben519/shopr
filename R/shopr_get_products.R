@@ -108,7 +108,7 @@ shopr_get_products <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, 
   pagesRequired <- ceiling(productsN/limit_per_page)
 
   # Determine how many pages to query
-  pagesN <- min(pagesRequired, max_pages)
+  pagesN <- max(1L, min(pagesRequired, max_pages))
 
   #--- Request --------------------------------------
 
@@ -179,6 +179,9 @@ shopr_get_products <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, 
 
   # Collapse list of data.frames into a single data.table
   products <- data.table::rbindlist(resultList, use.names = TRUE, fill = TRUE)
+
+  # If products is a NULL data.table, exit this function early
+  if(all.equal(products, data.table::data.table())) return(products)
 
   # Extract internal data.frames (e.g. line_items) into into standalone data.tables
   colz <- data.frame(Col = colnames(products))
