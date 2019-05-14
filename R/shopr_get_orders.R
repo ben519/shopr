@@ -186,18 +186,18 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
   if(is.logical(isNULLDT) && isNULLDT == TRUE) return(orders)
 
   # Extract internal data.frames (e.g. line_items) into into standalone data.tables
-  colz <- data.frame(Col = colnames(orders))
+  colz <- data.frame(Col = colnames(orders), stringsAsFactors = FALSE)
   colz$IsList <- sapply(colnames(orders), FUN = function(x) is.list(orders[[x]]), simplify = TRUE)
   result <- vector(mode = "list", length = sum(colz$IsList) + 1L)
   names(result) <- c("orders", colz$Col[colz$IsList == TRUE])
-  result$orders <- orders
   for(listCol in colz$Col[colz$IsList == TRUE]){
     tryCatch(expr = {
       result[[listCol]] <- rbindlist(orders[[listCol]], use.names = TRUE, fill = TRUE, idcol = "order_id")
       result[[listCol]][, order_id := orders[, id[order_id]]]
-      data.table::set(x = result$orders, j = listCol, value = NULL)
+      data.table::set(x = orders, j = listCol, value = NULL)
     }, error = function(x) return())
   }
+  result$orders <- orders
   result <- Filter(f = Negate(is.null), x = result)
 
   # Return the result

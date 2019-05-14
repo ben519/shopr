@@ -185,17 +185,17 @@ shopr_get_products <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, 
   if(is.logical(isNULLDT) && isNULLDT == TRUE) return(products)
 
   # Extract internal data.frames (e.g. line_items) into into standalone data.tables
-  colz <- data.frame(Col = colnames(products))
+  colz <- data.frame(Col = colnames(products), stringsAsFactors = FALSE)
   colz$IsList <- sapply(colnames(products), FUN = function(x) is.list(products[[x]]), simplify = TRUE)
   result <- vector(mode = "list", length = sum(colz$IsList) + 1L)
   names(result) <- c("products", colz$Col[colz$IsList == TRUE])
-  result$products <- products
   for(listCol in colz$Col[colz$IsList == TRUE]){
     tryCatch(expr = {
       result[[listCol]] <- rbindlist(products[[listCol]], use.names = TRUE, fill = TRUE)
-      data.table::set(x = result$products, j = listCol, value = NULL)
+      data.table::set(x = products, j = listCol, value = NULL)
     }, error = function(x) return())
   }
+  result$products <- products
   result <- Filter(f = Negate(is.null), x = result)
 
   # Return the result
