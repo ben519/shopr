@@ -192,8 +192,11 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
   names(result) <- c("orders", colz$Col[colz$IsList == TRUE])
   for(listCol in colz$Col[colz$IsList == TRUE]){
     tryCatch(expr = {
-      result[[listCol]] <- rbindlist(orders[[listCol]], use.names = TRUE, fill = TRUE, idcol = "order_id")
-      result[[listCol]][, order_id := orders[, id[order_id]]]
+      temp <- data.table::rbindlist(orders[[listCol]], use.names = TRUE, fill = TRUE, idcol = "order_row")
+      temp$order_id <- orders$id[temp$order_row]
+      temp$order_row <- NULL
+      data.table::setcolorder(temp, "order_id")
+      result[[listCol]] <- temp
       data.table::set(x = orders, j = listCol, value = NULL)
     }, error = function(x) return())
   }

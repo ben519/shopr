@@ -191,7 +191,7 @@ shopr_get_products <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, 
   names(result) <- c("products", colz$Col[colz$IsList == TRUE])
   for(listCol in colz$Col[colz$IsList == TRUE]){
     tryCatch(expr = {
-      result[[listCol]] <- rbindlist(products[[listCol]], use.names = TRUE, fill = TRUE)
+      result[[listCol]] <- data.table::rbindlist(products[[listCol]], use.names = TRUE, fill = TRUE)
       data.table::set(x = products, j = listCol, value = NULL)
     }, error = function(x) return())
   }
