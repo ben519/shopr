@@ -19,7 +19,7 @@ shopr is a collection of functions that make it easy to interact with the [Shopi
 
 ```{r, eval = FALSE}
 # install.packages("devtools")
-devtools::install_github("ben519/shopr")
+devtools::install_github("GormAnalysis/shopr")
 ```
 
 ## Setup

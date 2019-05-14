@@ -12,7 +12,7 @@ requests).
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ben519/shopr")
+devtools::install_github("GormAnalysis/shopr")
 ```
 
 ## Setup
@@ -84,13 +84,12 @@ fields or rows using filter criteria like *created\_at\_min*,
 
 ### Pagination
 
-Some resources (e.g. orders, products, etc.) require pagination to
-return a large result set. As an example, suppose we have a shop with
-1001 products and we want to GET every product. Shopify allows a max
-return size of 250 items per query (`limit_per_page = 250`), so we’ll
-need to make 5 queries to retrieve all the products. shopr handles
-pagination internally so you don’t have to. There are two ways shopr
-does this.
+Some resources (e.g. orders and products) require pagination to return a
+large result set. As an example, suppose we have a shop with 1001
+products and we want to fetch every product. Shopify allows a max return
+size of 250 items per query (`limit_per_page = 250`), so we’ll need to
+make 5 queries to retrieve all the products. shopr handles pagination
+internally so you don’t have to. There are two ways shopr does this.
 
 #### 1\. Using *since\_id*
 
@@ -104,7 +103,7 @@ preferred method for
 pagination](https://developers.shopify.com/changelog/paginated-requests-may-now-be-subject-to-additional-api-throttling).
 shopr uses *count* methods like `shopr_get_orders_count()` and
 `shopr_get_products_count()` to know in advance how many pages of
-records to request. shopr stiches the chunks of results together before
+records to request. shopr stitches the chunks of results together before
 returning them.
 
 #### 2\. Using *page*
