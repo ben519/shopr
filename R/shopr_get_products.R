@@ -181,7 +181,8 @@ shopr_get_products <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, 
   products <- data.table::rbindlist(resultList, use.names = TRUE, fill = TRUE)
 
   # If products is a NULL data.table, exit this function early
-  if(all.equal(products, data.table::data.table())) return(products)
+  isNULLDT <- all.equal(products, data.table::data.table())
+  if(is.logical(isNULLDT) && isNULLDT == TRUE) return(products)
 
   # Extract internal data.frames (e.g. line_items) into into standalone data.tables
   colz <- data.frame(Col = colnames(products))
