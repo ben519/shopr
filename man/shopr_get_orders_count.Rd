@@ -8,7 +8,7 @@ shopr_get_orders_count(shopURL, APIKey, APIPassword, APIVersion = NULL,
   ids = NULL, since_id = NULL, created_at_min = NULL,
   created_at_max = NULL, updated_at_min = NULL,
   updated_at_max = NULL, processed_at_min = NULL,
-  processed_at_max = NULL, status = NULL, financial_status = NULL,
+  processed_at_max = NULL, status = "any", financial_status = NULL,
   fulfillment_status = NULL, verbose = FALSE)
 }
 \arguments{
@@ -42,7 +42,7 @@ shopr_get_orders_count(shopURL, APIKey, APIPassword, APIVersion = NULL,
 \item{processed_at_max}{POSIXct datetime or a string with format like '2014-04-25T16:15:47-04:00' (default =
 \code{NULL})}
 
-\item{status}{order status. Should be \code{NULL} or one of \{'open', 'closed', 'any'\}. (default = \code{NULL})}
+\item{status}{order status. Should be \code{NULL} or one of \{'open', 'closed', 'any'\}. (default = \code{'any'})}
 
 \item{financial_status}{financial status. Should be \code{NULL} or one of \{'any', 'authorized', 'pending', 'paid',
 'refunded', 'voided'\}. (default = \code{NULL})}
