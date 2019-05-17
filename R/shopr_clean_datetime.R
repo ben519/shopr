@@ -15,7 +15,7 @@ shopr_clean_datetime <- function(datetime){
   } else if(is(datetime, "character")){
     # If datetime is a character, make sure it's in the proper format
 
-    datetimePattern <- "^\\d{4}-\\d{2}-\\d{2}T\\d{2}\\:\\d{2}\\:\\d{2}-\\d{2}\\:\\d{2}$"
+    datetimePattern <- "^\\d{4}-\\d{2}-\\d{2}T\\d{2}\\:\\d{2}\\:\\d{2}(\\-|\\+)\\d{2}\\:\\d{2}$"
     if(!stringr::str_detect(string = datetime, pattern = datetimePattern)){
       stop("Improper datetime format. Should be like 2014-04-25T16:15:47-04:00")
     }

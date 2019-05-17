@@ -16,6 +16,12 @@
 
 shopr_UTCOffset_to_POSIXct <- function(x, tz = "UTC"){
 
+  # Make sure x is in the proper format
+  patternDT <- "^\\d{4}-\\d{2}-\\d{2}T\\d{2}\\:\\d{2}\\:\\d{2}(\\-|\\+)\\d{2}\\:\\d{2}$"
+  if(!all(stringr::str_detect(string = x, pattern = patternDT), na.rm = TRUE)){
+    stop("At least one x is not in UTC offset format like 2014-04-25T16:15:47-04:00")
+  }
+
   # Extract the offset sign, hours and minutes from x
   offsetSigns <- stringr::str_extract(x, "(\\+|\\-)(?=\\d{2}\\:\\d{2}$)")
   offsetHrs <- as.numeric(stringr::str_extract(x, "\\d{2}(?=\\:\\d{2}$)"))
