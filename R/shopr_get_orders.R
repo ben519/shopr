@@ -140,14 +140,32 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
   # Make requests and generate responses
   for(i in seq_len(pagesN)){
     if(verbose) print(paste0("Requesting page: ", i, " of ", pagesN))
-    response_i <- httr::RETRY(
-      verb = "GET",
-      url = requestURL,
-      encode = "json",
-      httr::authenticate(user = APIKey, password = APIPassword),
-      query = queryParams,
-      quiet = !verbose
-    )
+
+    # Occasionally httr::RETRY() throws a seemingly random error, "no applicable method for 'http_error'.."
+    # If this happens, we catch the error and try fetching the data again, up to three times
+    response_i <- NULL
+    tryNumber = 1L
+    while(is.null(response_i)){
+      response_i <- tryCatch(expr = {
+        httr::RETRY(
+          verb = "GET",
+          url = requestURL,
+          encode = "json",
+          httr::authenticate(user = APIKey, password = APIPassword),
+          query = queryParams,
+          quiet = !verbose
+        )
+      }, error = function(cond){
+        if(stringr::str_detect(cond$message, "no applicable method for 'http_error'") & tryNumber < 3L){
+          tryNumber <- tryNumber + 1L
+          return(NULL)
+        }  else{
+          stop(cond)
+        }
+      })
+    }
+
+    # Parse JSON response
     resultList[[i]] <- jsonlite::fromJSON(
       txt = httr::content(response_i, "text", encoding = "UTF-8"),
       flatten = TRUE
