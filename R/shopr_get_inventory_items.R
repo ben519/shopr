@@ -38,11 +38,13 @@ shopr_get_inventory_items <- function(shopURL, APIKey, APIPassword, APIVersion =
   if(limit_per_page < 1L | limit_per_page > 250L) stop("'limit_per_page' should be in the range [1, 250]")
 
   # Clean some inputs
-  ids_ <- shopr_clean_ids(ids = ids, resource = "inventory")
+  ids_ <- shopr_clean_ids(ids = ids, resource = "inventory", since_id = since_id)
+  ids_ <- as.numeric(ids_)
+  ids_ <- sort(ids_)
   if(length(ids_) > max_pages * limit_per_page){
     warning("Requesting more ids than max_pages * limit_per_page. Some ids may not be included in the result")
   }
-  since_id_ <- since_id
+  since_id_ <- as.integer(since_id)
 
   #--- API Version --------------------------------------
   # If APIVersion is NULL, use the latest
@@ -62,7 +64,7 @@ shopr_get_inventory_items <- function(shopURL, APIKey, APIPassword, APIVersion =
   # Build request
   requestURL <- paste0(shopURL, "/admin/api/", APIVersion_, "/inventory_items.json")
   queryParams <- list(
-    ids = if(is.null(ids_)) NULL else paste(ids_, collapse = ","),
+    ids = paste(head(ids_[ids_ > since_id_], limit_per_page), collapse = ","),
     limit = limit_per_page,
     since_id = since_id_
   )
@@ -83,15 +85,10 @@ shopr_get_inventory_items <- function(shopURL, APIKey, APIPassword, APIVersion =
       flatten = TRUE
     )$inventory_items
 
-    # Update since_id
-    queryParams$since_id <- tail(resultList[[i]]$id, 1)
-
-    # Update ids
-    if(!is.null(ids_)){
-      ids_ <- ids_[ids_ > queryParams$since_id]
-      if(length(ids_) == 0) break
-      queryParams$ids <- paste(ids_, collapse = ",")
-    }
+    # Update since_id, ids
+    queryParams$since_id <- as.character(tail(resultList[[i]]$id, 1))
+    queryParams$ids <- paste(head(ids_[ids_ > as.numeric(queryParams$since_id)], limit_per_page), collapse = ",")
+    if(length(queryParams$ids) == 0) break
 
     # Check the current API call limit status. If the leaky call bucket is full, sleep for a bit
     callLimit <- shopr_parse_call_limit(response_i$headers$`x-shopify-shop-api-call-limit`)
