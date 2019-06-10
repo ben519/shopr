@@ -16,15 +16,18 @@ shopr_clean_ids <- function(ids, resource, since_id = NULL){
   # Check for dupes
   if(any(duplicated(ids))) stop("'ids' contains at least one duplicate")
 
-  # Convert ids to character
-  ids <- as.character(ids)
+  # Convert ids to integer
+  ids <- as.numeric(ids)
 
   # Remove ids <= since_id
   if(!is.null(since_id)){
-    since_id <- as.character(since_id)
+    since_id <- as.numeric(since_id)
     ids <- ids[ids > since_id]
-    if(length(ids) == 0) stop('No ids left after remove those <= since_id')
+    if(length(ids) == 0) stop('No ids left after removing those <= since_id')
   }
+
+  # Convert ids to character
+  ids <- as.character(ids)
 
   return(ids)
 }
