@@ -17,7 +17,6 @@
 #' @param APIVersion API version (default = \code{NULL} -> use the latest version)
 #' @param max_pages max number of pages of orders to return. (default = \code{Inf})
 #' @param limit_per_page max number of results to return per request. Should be in the range [1, 250]. (default = 250)
-#' @param page initial page of results to return. (default = 1)
 #' @param inventory_item_ids inventory item ids. At least one of \code{inventory_item_ids} and \code{location_ids} must
 #'   be provided. (default = \code{NULL})
 #' @param location_ids location ids. At least one of \code{inventory_item_ids} and \code{location_ids} must be provided.
@@ -27,7 +26,7 @@
 #' @return data.table of inventory levels
 
 shopr_get_inventory_levels <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, max_pages = Inf,
-                                       limit_per_page = 250L, page = 1L, inventory_item_ids = NULL, location_ids = NULL,
+                                       limit_per_page = 250L, inventory_item_ids = NULL, location_ids = NULL,
                                        updated_at_min = NULL, verbose = FALSE){
 
   #--- Validate Inputs --------------------------------------
@@ -53,6 +52,14 @@ shopr_get_inventory_levels <- function(shopURL, APIKey, APIPassword, APIVersion 
 
   pagesN <- max(1L, min(999999, max_pages))
 
+  # Split ids into chunks of 50 or less
+  if(!is.null(inventory_item_ids)){
+    inventory_item_ids_chunks <- split(inventory_item_ids, ceiling(seq_along(inventory_item_ids)/50))
+  }
+  if(!is.null(location_ids)){
+    location_ids_chunks <- split(location_ids, ceiling(seq_along(location_ids)/50))
+  }
+
   #--- Request --------------------------------------
 
   # List to store requests & results
@@ -61,37 +68,56 @@ shopr_get_inventory_levels <- function(shopURL, APIKey, APIPassword, APIVersion 
   # Build request
   requestURL <- paste0(shopURL, "/admin/api/", APIVersion_, "/inventory_levels.json")
   queryParams <- list(
-    inventory_item_ids = if(is.null(inventory_item_ids)) NULL else paste(inventory_item_ids, collapse = ","),
-    location_ids = if(is.null(location_ids)) NULL else paste(location_ids, collapse = ","),
-    limit = limit_per_page,
-    page = page
+    limit = limit_per_page
   )
 
-  # Make requests and generate responses
-  for(i in seq_len(pagesN)){
-    if(verbose) print(paste0("Requesting page: ", i))
-    response_i <- httr::RETRY(
-      verb = "GET",
-      url = requestURL,
-      encode = "json",
-      httr::authenticate(user = APIKey, password = APIPassword),
-      query = queryParams,
-      quiet = !verbose
-    )
-    resultList[[i]] <- jsonlite::fromJSON(
-      txt = httr::content(response_i, "text", encoding = "UTF-8"),
-      flatten = TRUE
-    )$inventory_levels
+  # Store iteration index
+  i <- 1L
 
-    # Exit if no recrods found in the recent query
-    if(length(resultList[[i]]) == 0) break
+  # Loop through inventory_item_ids_chunks
+  for(j in seq_along(inventory_item_ids_chunks)){
 
-    # Update page
-    queryParams$page <- queryParams$page + 1
+    queryParams$inventory_item_ids <- if(is.null(inventory_item_ids)) NULL else
+      paste(inventory_item_ids_chunks[[j]], collapse = ",")
 
-    # Check the current API call limit status. If the leaky call bucket is full, sleep for a bit
-    callLimit <- shopr_parse_call_limit(response_i$headers$`x-shopify-shop-api-call-limit`)
-    if(callLimit$bucketCalls == callLimit$bucketSize) Sys.sleep(0.5)  # Sleep for 0.5 seconds
+    # Loop through location_ids_chunks
+    for(k in seq_along(location_ids_chunks)){
+
+      queryParams$location_ids <- if(is.null(location_ids)) NULL else
+        paste(location_ids_chunks[[k]], collapse = ",")
+
+      queryParams$page <- 1L
+
+      # Make requests and generate responses
+      while(is.null(resultList[[pagesN]])){
+        if(verbose) print(paste0("Requesting page: ", i))
+        response_i <- httr::RETRY(
+          verb = "GET",
+          url = requestURL,
+          encode = "json",
+          httr::authenticate(user = APIKey, password = APIPassword),
+          query = queryParams,
+          quiet = !verbose
+        )
+        resultList[[i]] <- jsonlite::fromJSON(
+          txt = httr::content(response_i, "text", encoding = "UTF-8"),
+          flatten = TRUE
+        )$inventory_levels
+
+        # Exit if no recrods found in the recent query
+        if(length(resultList[[i]]) == 0) break
+
+        # Update page
+        queryParams$page <- queryParams$page + 1
+
+        # Update i
+        i <- i + 1L
+
+        # Check the current API call limit status. If the leaky call bucket is full, sleep for a bit
+        callLimit <- shopr_parse_call_limit(response_i$headers$`x-shopify-shop-api-call-limit`)
+        if(callLimit$bucketCalls == callLimit$bucketSize) Sys.sleep(0.5)  # Sleep for 0.5 seconds
+      }
+    }
   }
 
   # Check API version (but only if the user requested a specific version)
