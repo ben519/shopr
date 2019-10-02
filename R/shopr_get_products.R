@@ -76,9 +76,8 @@ shopr_get_products <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, 
 
   #--- API Version --------------------------------------
   # If APIVersion is NULL, use the latest
-  # TODO: make this more dynamic
 
-  APIVersion_ <- if(is.null(APIVersion)) "2019-04" else APIVersion
+  APIVersion_ <- if(is.null(APIVersion)) shopr_get_latest_api_version() else APIVersion
 
   #--- Pagination --------------------------------------
   # Get the number of total products for the query parameters
