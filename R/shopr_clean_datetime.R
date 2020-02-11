@@ -12,7 +12,7 @@ shopr_clean_datetime <- function(datetime){
 
     stop("datetime should be length 1")
 
-  } else if(is(datetime, "character")){
+  } else if(methods::is(datetime, "character")){
     # If datetime is a character, make sure it's in the proper format
 
     datetimePattern <- "^\\d{4}-\\d{2}-\\d{2}T\\d{2}\\:\\d{2}\\:\\d{2}(\\-|\\+)\\d{2}\\:\\d{2}$"
@@ -22,7 +22,7 @@ shopr_clean_datetime <- function(datetime){
 
     return(datetime)
 
-  } else if(is(datetime, "POSIXct")){
+  } else if(methods::is(datetime, "POSIXct")){
     # If datetime is a datetime (class POSIXct), return its character equivalent format in UTC time
 
     # Make a copy of datetime with the timezone changed to UTC

@@ -85,7 +85,7 @@ shopr_get_products_count <- function(shopURL, APIKey, APIPassword, APIVersion = 
     encode = "json",
     httr::authenticate(user = APIKey, password = APIPassword),
     query = queryParams,
-    quiet = !verbose
+    quiet = TRUE
   )
 
   # Check API version (but only if the user requested a specific version)

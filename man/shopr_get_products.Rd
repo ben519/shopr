@@ -4,14 +4,30 @@
 \alias{shopr_get_products}
 \title{Get Products}
 \usage{
-shopr_get_products(shopURL, APIKey, APIPassword, APIVersion = NULL,
-  max_pages = Inf, limit_per_page = 250L, ids = NULL,
-  since_id = 0L, title = NULL, vendor = NULL, handle = NULL,
-  product_type = NULL, collection_id = NULL, created_at_min = NULL,
-  created_at_max = NULL, updated_at_min = NULL,
-  updated_at_max = NULL, published_at_min = NULL,
-  published_at_max = NULL, published_status = NULL, fields = NULL,
-  verbose = FALSE)
+shopr_get_products(
+  shopURL,
+  APIKey,
+  APIPassword,
+  APIVersion = NULL,
+  max_pages = Inf,
+  limit_per_page = 250L,
+  ids = NULL,
+  since_id = 0L,
+  title = NULL,
+  vendor = NULL,
+  handle = NULL,
+  product_type = NULL,
+  collection_id = NULL,
+  created_at_min = NULL,
+  created_at_max = NULL,
+  updated_at_min = NULL,
+  updated_at_max = NULL,
+  published_at_min = NULL,
+  published_at_max = NULL,
+  published_status = NULL,
+  fields = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{shopURL}{shop URL (e.g. 'https://superstore-1.myshopify.com')}

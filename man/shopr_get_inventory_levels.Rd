@@ -4,10 +4,18 @@
 \alias{shopr_get_inventory_levels}
 \title{Get Inventory Levels}
 \usage{
-shopr_get_inventory_levels(shopURL, APIKey, APIPassword,
-  APIVersion = NULL, max_pages = Inf, limit_per_page = 250L,
-  inventory_item_ids = NULL, location_ids = NULL,
-  updated_at_min = NULL, verbose = FALSE)
+shopr_get_inventory_levels(
+  shopURL,
+  APIKey,
+  APIPassword,
+  APIVersion = NULL,
+  max_pages = Inf,
+  limit_per_page = 250L,
+  inventory_item_ids = NULL,
+  location_ids = NULL,
+  updated_at_min = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{shopURL}{shop URL (e.g. 'https://superstore-1.myshopify.com')}
@@ -30,6 +38,8 @@ be provided. (default = \code{NULL})}
 
 \item{updated_at_min}{POSIXct datetime or a string with format like '2014-04-25T16:15:47-04:00' (default =
 \code{NULL})}
+
+\item{verbose}{should progress messages be printed? (default = \code{FALSE})}
 }
 \value{
 data.table of inventory levels

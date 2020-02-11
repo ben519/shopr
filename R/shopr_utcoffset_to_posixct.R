@@ -11,8 +11,9 @@
 #' @return vector of POSIXct
 #'
 #' @examples
-#' shopr_UTCOffset_to_POSIXct(x = c('2019-01-01T13:15:00-04:00', '2019-01-01T13:15:00+04:00'))
-#' shopr_UTCOffset_to_POSIXct(x = c('2019-01-01T13:15:00-04:00', '2019-01-01T13:15:00+04:00'), tz = 'America/Chicago')
+#' foo <- c('2019-01-01T13:15:00-04:00', '2019-01-01T13:15:00+04:00')
+#' shopr_UTCOffset_to_POSIXct(x = foo)
+#' shopr_UTCOffset_to_POSIXct(x = foo, tz = 'America/Chicago')
 
 shopr_UTCOffset_to_POSIXct <- function(x, tz = "UTC"){
 

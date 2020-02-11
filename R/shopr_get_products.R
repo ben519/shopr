@@ -111,11 +111,7 @@ shopr_get_products <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, 
 
   #--- Request --------------------------------------
 
-  # List to store requests & results
-  resultList <- vector(mode = "list", length = pagesN)
-
-  # Build request
-  requestURL <- paste0(shopURL, "/admin/api/", APIVersion_, "/products.json")
+  # Build queryParams
   queryParams <- list(
     ids = if(is.null(ids_)) NULL else paste(ids_, collapse = ","),
     limit = limit_per_page,
@@ -135,49 +131,40 @@ shopr_get_products <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, 
     fields = fields_
   )
 
-  # Make requests and generate responses
-  for(i in seq_len(pagesN)){
-    if(verbose) print(paste0("Requesting page: ", i, " of ", pagesN))
-    response_i <- httr::RETRY(
-      verb = "GET",
-      url = requestURL,
-      encode = "json",
-      httr::authenticate(user = APIKey, password = APIPassword),
-      query = queryParams,
-      quiet = !verbose
-    )
-    resultList[[i]] <- jsonlite::fromJSON(
-      txt = httr::content(response_i, "text", encoding = "UTF-8"),
-      flatten = TRUE
-    )$products
+  # Build request
+  requestURL <- paste0(shopURL, "/admin/api/", APIVersion_, "/products.json")
+  pg <- 1L
 
-    # Update since_id
-    queryParams$since_id <- tail(resultList[[i]]$id, 1)
-
-    # Update ids
-    if(!is.null(ids_)){
-      ids_ <- ids_[ids_ > queryParams$since_id]
-      if(length(ids_) == 0) break
-      queryParams$ids <- paste(ids_, collapse = ",")
-    }
-
-    # Check the current API call limit status. If the leaky call bucket is full, sleep for a bit
-    callLimit <- shopr_parse_call_limit(response_i$headers$`x-shopify-shop-api-call-limit`)
-    if(callLimit$bucketCalls == callLimit$bucketSize) Sys.sleep(0.5)  # Sleep for 0.5 seconds
-  }
+  # Make requests
+  responses <- shopr_make_requests(
+    requestURL = requestURL,
+    params = queryParams,
+    pagesN = pagesN,
+    maxPages = max_pages,
+    APIKey = APIKey,
+    APIPassword = APIPassword,
+    verbose = verbose
+  )
 
   # Check API version (but only if the user requested a specific version)
-  if(!is.null(APIVersion) && response_i$headers$`x-shopify-api-version` != APIVersion){
+  if(!is.null(APIVersion) && responses[[1L]]$headers$`x-shopify-api-version` != APIVersion){
     warning(paste0(
       "Shopify processed this request with a different API version than the one you requested. ",
-      "Requested: ", APIVersion, ", used: ", response_i$headers$`x-shopify-api-version`
+      "Requested: ", APIVersion, ", used: ", responses[[1L]]$headers$`x-shopify-api-version`
     ))
   }
 
-  #--- Clean up --------------------------------------
+  #--- Parse responses --------------------------------------
 
-  # Collapse list of data.frames into a single data.table
-  products <- data.table::rbindlist(resultList, use.names = TRUE, fill = TRUE)
+  # Parse JSON
+  products <- lapply(responses, function(x){
+    data.table::as.data.table(jsonlite::fromJSON(
+      txt = httr::content(x, "text", encoding = "UTF-8", flatten = TRUE)
+    )$products)
+  })
+
+  # Collapse list of data.tables into a single data.table
+  products <- data.table::rbindlist(products, use.names = TRUE, fill = TRUE)
 
   # If products is a NULL data.table, exit this function early
   isNULLDT <- all.equal(products, data.table::data.table())

@@ -4,9 +4,17 @@
 \alias{shopr_get_inventory_items}
 \title{Get Inventory Items}
 \usage{
-shopr_get_inventory_items(shopURL, APIKey, APIPassword,
-  APIVersion = NULL, max_pages = Inf, limit_per_page = 250L, ids,
-  since_id = 0L, verbose = FALSE)
+shopr_get_inventory_items(
+  shopURL,
+  APIKey,
+  APIPassword,
+  APIVersion = NULL,
+  max_pages = Inf,
+  limit_per_page = 250L,
+  ids,
+  since_id = 0L,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{shopURL}{shop URL (e.g. 'https://superstore-1.myshopify.com')}

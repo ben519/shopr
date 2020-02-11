@@ -4,12 +4,24 @@
 \alias{shopr_get_orders_count}
 \title{Get Orders Count}
 \usage{
-shopr_get_orders_count(shopURL, APIKey, APIPassword, APIVersion = NULL,
-  ids = NULL, since_id = NULL, created_at_min = NULL,
-  created_at_max = NULL, updated_at_min = NULL,
-  updated_at_max = NULL, processed_at_min = NULL,
-  processed_at_max = NULL, status = "any", financial_status = NULL,
-  fulfillment_status = NULL, verbose = FALSE)
+shopr_get_orders_count(
+  shopURL,
+  APIKey,
+  APIPassword,
+  APIVersion = NULL,
+  ids = NULL,
+  since_id = NULL,
+  created_at_min = NULL,
+  created_at_max = NULL,
+  updated_at_min = NULL,
+  updated_at_max = NULL,
+  processed_at_min = NULL,
+  processed_at_max = NULL,
+  status = "any",
+  financial_status = NULL,
+  fulfillment_status = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{shopURL}{shop URL (e.g. 'https://superstore-1.myshopify.com')}

@@ -31,6 +31,10 @@
 
 shopr_get_inventory_items <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, max_pages = Inf,
                                       limit_per_page = 250L, ids, since_id = 0L, verbose = FALSE){
+  # Unlike get_orders and get_products, this endpoint is messy..
+  # As of 2020-02-11, this endpoint requires that we pass in a sequence of ids into the request URL
+  # If we pass in too many ids, the query string becomes too long and the request errors
+  # So, we have to make separate requests using chunks of ids
 
   #--- Validate Inputs --------------------------------------
 
@@ -57,56 +61,50 @@ shopr_get_inventory_items <- function(shopURL, APIKey, APIPassword, APIVersion =
 
   #--- Request --------------------------------------
 
-  # List to store requests & results
-  resultList <- vector(mode = "list", length = pagesN)
-
-  # Build request
+  responses <- vector(mode = "list", length = pagesN)
   requestURL <- paste0(shopURL, "/admin/api/", APIVersion_, "/inventory_items.json")
-  queryParams <- list(
-    ids = paste(head(ids_[ids_ > since_id_], limit_per_page), collapse = ","),
-    limit = limit_per_page,
-    since_id = since_id_
-  )
-
-  # Make requests and generate responses
   for(i in seq_len(pagesN)){
     if(verbose) print(paste0("Requesting page: ", i, " of ", pagesN))
-    response_i <- httr::RETRY(
-      verb = "GET",
-      url = requestURL,
-      encode = "json",
-      httr::authenticate(user = APIKey, password = APIPassword),
-      query = queryParams,
-      quiet = !verbose
+
+    # Build queryParams
+    queryParams <- list(
+      ids = paste(ids_[((i - 1) * limit_per_page + 1):pmin(length(ids_), (i * limit_per_page))], collapse = ","),
+      limit = limit_per_page,
+      since_id = since_id_
     )
-    resultList[[i]] <- jsonlite::fromJSON(
-      txt = httr::content(response_i, "text", encoding = "UTF-8"),
-      flatten = TRUE
-    )$inventory_items
 
-    # Update since_id, ids
-    queryParams$since_id <- as.character(tail(resultList[[i]]$id, 1))
-    queryParams$ids <- paste(head(ids_[ids_ > as.numeric(queryParams$since_id)], limit_per_page), collapse = ",")
-    if(length(queryParams$ids) == 0) break
-
-    # Check the current API call limit status. If the leaky call bucket is full, sleep for a bit
-    callLimit <- shopr_parse_call_limit(response_i$headers$`x-shopify-shop-api-call-limit`)
-    if(callLimit$bucketCalls == callLimit$bucketSize) Sys.sleep(0.5)  # Sleep for 0.5 seconds
+    # Make request
+    responses[[i]] <- shopr_make_requests(
+      requestURL = requestURL,
+      params = queryParams,
+      pagesN = 1L,
+      maxPages = 1L,
+      APIKey = APIKey,
+      APIPassword = APIPassword,
+      verbose = FALSE
+    )[[1L]]
   }
 
   # Check API version (but only if the user requested a specific version)
-  if(!is.null(APIVersion) && response_i$headers$`x-shopify-api-version` != APIVersion){
+  if(!is.null(APIVersion) && responses[[1L]]$headers$`x-shopify-api-version` != APIVersion){
     warning(paste0(
       "Shopify processed this request with a different API version than the one you requested. ",
-      "Requested: ", APIVersion, ", used: ", response_i$headers$`x-shopify-api-version`
+      "Requested: ", APIVersion, ", used: ", responses[[1L]]$headers$`x-shopify-api-version`
     ))
   }
 
-  #--- Clean up --------------------------------------
+  #--- Parse responses --------------------------------------
 
-  # Collapse list of data.frames into a single data.table
-  result <- data.table::rbindlist(resultList, use.names = TRUE, fill = TRUE)
+  # Parse JSON
+  invitems <- lapply(responses, function(x){
+    data.table::as.data.table(jsonlite::fromJSON(
+      txt = httr::content(x, "text", encoding = "UTF-8", flatten = TRUE)
+    )$inventory_items)
+  })
+
+  # Collapse list of data.tables into a single data.table
+  invitems <- data.table::rbindlist(invitems, use.names = TRUE, fill = TRUE)
 
   # Return the result
-  return(result[])
+  return(invitems[])
 }

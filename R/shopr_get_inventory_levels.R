@@ -23,6 +23,7 @@
 #'   (default = \code{NULL})
 #' @param updated_at_min POSIXct datetime or a string with format like '2014-04-25T16:15:47-04:00' (default =
 #'   \code{NULL})
+#' @param verbose should progress messages be printed? (default = \code{FALSE})
 #' @return data.table of inventory levels
 
 shopr_get_inventory_levels <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, max_pages = Inf,
@@ -49,89 +50,89 @@ shopr_get_inventory_levels <- function(shopURL, APIKey, APIPassword, APIVersion 
 
   #--- Pagination --------------------------------------
 
-  pagesN <- max(1L, min(999999, max_pages))
-
-  # Split ids into chunks of 50 or less
-  if(!is.null(inventory_item_ids)){
-    inventory_item_ids_chunks <- split(inventory_item_ids, ceiling(seq_along(inventory_item_ids)/50))
-  }
-  if(!is.null(location_ids)){
-    location_ids_chunks <- split(location_ids, ceiling(seq_along(location_ids)/50))
+  if(!is.null(inventory_item_ids) && !is.null(location_ids)){
+    chunksI <- ceiling(length(inventory_item_ids)/50)
+    chunksL <- ceiling(length(location_ids)/50)
+  } else if(!is.null(inventory_item_ids)){
+    chunksI <- ceiling(length(inventory_item_ids)/50)
+    chunksL <- 1L
+  } else if(!is.null(location_ids)){
+    chunksL <- ceiling(length(location_ids)/50)
+    chunksI <- 1L
   }
 
   #--- Request --------------------------------------
 
-  # List to store requests & results
-  resultList <- vector(mode = "list", length = pagesN)
-
-  # Build request
+  # Initialize responses, requestURL, num_pages
+  responses <- vector(mode = "list", length = chunksL)
+  for(k in seq_along(responses)) responses[[k]] <- vector(mode = "list", length = chunksI)
   requestURL <- paste0(shopURL, "/admin/api/", APIVersion_, "/inventory_levels.json")
-  queryParams <- list(
-    limit = limit_per_page
-  )
+  num_pages <- 0L
 
-  # Store iteration index
-  i <- 1L
+  # Loop over chunks of 50 locations
+  for(l in seq_len(chunksL)){
+    location_ids_l <- if(is.null(location_ids)) NULL else
+      paste(location_ids[((l - 1) * 50 + 1):pmin(length(location_ids), l * 50)], collapse = ",")
 
-  # Loop through inventory_item_ids_chunks
-  for(j in seq_along(inventory_item_ids_chunks)){
+    # Loop over chunks of 50 inventory items
+    for(i in seq_len(chunksI)){
+      inventory_item_ids_i <- if(is.null(inventory_item_ids)) NULL else
+        paste(inventory_item_ids[((i - 1) * 50 + 1):pmin(length(inventory_item_ids), i * 50)], collapse = ",")
 
-    queryParams$inventory_item_ids <- if(is.null(inventory_item_ids)) NULL else
-      paste(inventory_item_ids_chunks[[j]], collapse = ",")
+      # Print progress?
+      if(verbose) print(paste0("Requesting chunk of pages: ", (l - 1) * chunksI + i, " of ", chunksL * chunksI))
 
-    # Loop through location_ids_chunks
-    for(k in seq_along(location_ids_chunks)){
+      # Get the inventory levels for this chunk of (inv items, locations)
+      queryParams <- list(
+        limit = limit_per_page,
+        location_ids = location_ids_l,
+        inventory_item_ids = inventory_item_ids_i,
+        updated_at_min = updated_at_min_
+      )
+      responses[[l]][[i]] <- shopr_make_requests(
+        requestURL = requestURL,
+        params = queryParams,
+        pagesN = ceiling(50 * 50 / limit_per_page),
+        maxPages = max_pages - num_pages,
+        APIKey = APIKey,
+        APIPassword = APIPassword,
+        verbose = FALSE
+      )
 
-      queryParams$location_ids <- if(is.null(location_ids)) NULL else
-        paste(location_ids_chunks[[k]], collapse = ",")
+      # Update num_pages
+      num_pages <- num_pages + length(responses[[l]][[i]])
 
-      queryParams$page <- 1L
-
-      # Make requests and generate responses
-      while(is.null(resultList[[pagesN]])){
-        if(verbose) print(paste0("Requesting page: ", i))
-        response_i <- httr::RETRY(
-          verb = "GET",
-          url = requestURL,
-          encode = "json",
-          httr::authenticate(user = APIKey, password = APIPassword),
-          query = queryParams,
-          quiet = !verbose
-        )
-        resultList[[i]] <- jsonlite::fromJSON(
-          txt = httr::content(response_i, "text", encoding = "UTF-8"),
-          flatten = TRUE
-        )$inventory_levels
-
-        # Exit if no recrods found in the recent query
-        if(length(resultList[[i]]) == 0) break
-
-        # Update page
-        queryParams$page <- queryParams$page + 1
-
-        # Update i
-        i <- i + 1L
-
-        # Check the current API call limit status. If the leaky call bucket is full, sleep for a bit
-        callLimit <- shopr_parse_call_limit(response_i$headers$`x-shopify-shop-api-call-limit`)
-        if(callLimit$bucketCalls == callLimit$bucketSize) Sys.sleep(0.5)  # Sleep for 0.5 seconds
-      }
+      # Exit loop if max_pages has been reached
+      if(num_pages == max_pages) break
     }
+
+    # Exit loop if max_pages has been reached
+    if(num_pages == max_pages) break
   }
 
+  # Flatten the list of lists into just a list of responses
+  responses <- do.call(c, unlist(responses, recursive = FALSE))
+
   # Check API version (but only if the user requested a specific version)
-  if(!is.null(APIVersion) && response_i$headers$`x-shopify-api-version` != APIVersion){
+  if(!is.null(APIVersion) && responses[[1]]$headers$`x-shopify-api-version` != APIVersion){
     warning(paste0(
       "Shopify processed this request with a different API version than the one you requested. ",
-      "Requested: ", APIVersion, ", used: ", response_i$headers$`x-shopify-api-version`
+      "Requested: ", APIVersion, ", used: ", responses[[1]]$headers$`x-shopify-api-version`
     ))
   }
 
-  #--- Clean up --------------------------------------
+  #--- Parse responses --------------------------------------
 
-  # Collapse list of data.frames into a single data.table
-  result <- data.table::rbindlist(resultList, use.names = TRUE, fill = TRUE)
+  # Parse JSON
+  invlevels <- lapply(responses, function(x){
+    data.table::as.data.table(jsonlite::fromJSON(
+      txt = httr::content(x, "text", encoding = "UTF-8", flatten = TRUE)
+    )$inventory_levels)
+  })
+
+  # Collapse list of data.tables into a single data.table
+  invlevels <- data.table::rbindlist(invlevels, use.names = TRUE, fill = TRUE)
 
   # Return the result
-  return(result[])
+  return(invlevels[])
 }

@@ -18,8 +18,9 @@ vector of POSIXct
 Convert a UTC offset string (e.g. '2014-04-25T16:15:47-04:00') to POSIXct
 }
 \examples{
-shopr_UTCOffset_to_POSIXct(x = c('2019-01-01T13:15:00-04:00', '2019-01-01T13:15:00+04:00'))
-shopr_UTCOffset_to_POSIXct(x = c('2019-01-01T13:15:00-04:00', '2019-01-01T13:15:00+04:00'), tz = 'America/Chicago')
+foo <- c('2019-01-01T13:15:00-04:00', '2019-01-01T13:15:00+04:00')
+shopr_UTCOffset_to_POSIXct(x = foo)
+shopr_UTCOffset_to_POSIXct(x = foo, tz = 'America/Chicago')
 }
 \references{
 \url{https://en.wikipedia.org/wiki/UTC_offset}

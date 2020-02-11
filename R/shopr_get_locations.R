@@ -43,10 +43,6 @@ shopr_get_locations <- function(shopURL, APIKey, APIPassword, APIVersion = NULL,
     httr::authenticate(user = APIKey, password = APIPassword),
     quiet = !verbose
   )
-  result <- jsonlite::fromJSON(
-    txt = httr::content(response, "text", encoding = "UTF-8"),
-    flatten = TRUE
-  )$locations
 
   # Check API version (but only if the user requested a specific version)
   if(!is.null(APIVersion) && response$headers$`x-shopify-api-version` != APIVersion){
@@ -56,11 +52,16 @@ shopr_get_locations <- function(shopURL, APIKey, APIPassword, APIVersion = NULL,
     ))
   }
 
-  #--- Clean up --------------------------------------
+  #--- Parse response --------------------------------------
+
+  locations <- jsonlite::fromJSON(
+    txt = httr::content(response, "text", encoding = "UTF-8"),
+    flatten = TRUE
+  )$locations
 
   # Convert to data.table
-  data.table::setDT(result)
+  data.table::setDT(locations)
 
-  # Return the result
-  return(result[])
+  # Return the locations
+  return(locations[])
 }

@@ -4,13 +4,26 @@
 \alias{shopr_get_products_count}
 \title{Get Products Count}
 \usage{
-shopr_get_products_count(shopURL, APIKey, APIPassword, APIVersion = NULL,
-  ids = NULL, since_id = NULL, title = NULL, vendor = NULL,
-  handle = NULL, product_type = NULL, collection_id = NULL,
-  created_at_min = NULL, created_at_max = NULL,
-  updated_at_min = NULL, updated_at_max = NULL,
-  published_at_min = NULL, published_at_max = NULL,
-  published_status = NULL)
+shopr_get_products_count(
+  shopURL,
+  APIKey,
+  APIPassword,
+  APIVersion = NULL,
+  ids = NULL,
+  since_id = NULL,
+  title = NULL,
+  vendor = NULL,
+  handle = NULL,
+  product_type = NULL,
+  collection_id = NULL,
+  created_at_min = NULL,
+  created_at_max = NULL,
+  updated_at_min = NULL,
+  updated_at_max = NULL,
+  published_at_min = NULL,
+  published_at_max = NULL,
+  published_status = NULL
+)
 }
 \arguments{
 \item{shopURL}{shop URL (e.g. 'https://superstore-1.myshopify.com')}

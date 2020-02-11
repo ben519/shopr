@@ -4,13 +4,27 @@
 \alias{shopr_get_orders}
 \title{Get Orders}
 \usage{
-shopr_get_orders(shopURL, APIKey, APIPassword, APIVersion = NULL,
-  max_pages = Inf, limit_per_page = 250L, ids = NULL,
-  since_id = 0L, created_at_min = NULL, created_at_max = NULL,
-  updated_at_min = NULL, updated_at_max = NULL,
-  processed_at_min = NULL, processed_at_max = NULL, status = "any",
-  financial_status = NULL, fulfillment_status = NULL, fields = NULL,
-  verbose = FALSE)
+shopr_get_orders(
+  shopURL,
+  APIKey,
+  APIPassword,
+  APIVersion = NULL,
+  max_pages = Inf,
+  limit_per_page = 250L,
+  ids = NULL,
+  since_id = 0L,
+  created_at_min = NULL,
+  created_at_max = NULL,
+  updated_at_min = NULL,
+  updated_at_max = NULL,
+  processed_at_min = NULL,
+  processed_at_max = NULL,
+  status = "any",
+  financial_status = NULL,
+  fulfillment_status = NULL,
+  fields = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{shopURL}{shop URL (e.g. 'https://superstore-1.myshopify.com')}

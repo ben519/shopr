@@ -4,8 +4,13 @@
 \alias{shopr_get_locations}
 \title{Get Locations}
 \usage{
-shopr_get_locations(shopURL, APIKey, APIPassword, APIVersion = NULL,
-  verbose = FALSE)
+shopr_get_locations(
+  shopURL,
+  APIKey,
+  APIPassword,
+  APIVersion = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{shopURL}{shop url (e.g. 'https://superstore-1.myshopify.com')}
