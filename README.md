@@ -43,7 +43,7 @@ shop:
 3.  APIPassword (e.g. “d4e5g6”)
 
 For many functions, these are the *only* required parameters, although
-many additional parameters may be given.
+additional parameters may be given.
 
 ### Example Use
 
@@ -89,29 +89,7 @@ large result set. As an example, suppose we have a shop with 1001
 products and we want to fetch every product. Shopify allows a max return
 size of 250 items per query (`limit_per_page = 250`), so we’ll need to
 make 5 queries to retrieve all the products. shopr handles pagination
-internally so you don’t have to. There are two ways shopr does this.
-
-#### 1\. Using *since\_id*
-
-Some methods like `shopr_get_orders()` and `shopr_get_products()`
-provide a parameter, *since\_id*, which is 0 by default. If you request
-to get all the orders for a shop, shopr will make successive calls to
-Shopify’s API fetching orders in chunks of 250, updating *since\_id* to
-keep track of what orders have already been returned. (Note that Shopify
-orders results by id when *since\_id* is used.) [This is Shopify’s
-preferred method for
-pagination](https://developers.shopify.com/changelog/paginated-requests-may-now-be-subject-to-additional-api-throttling).
-shopr uses *count* methods like `shopr_get_orders_count()` and
-`shopr_get_products_count()` to know in advance how many pages of
-records to request. shopr stitches the chunks of results together before
-returning them.
-
-#### 2\. Using *page*
-
-Some methods like `shopr_get_inventory_levels()` uses *page* instead of
-*since\_id*. (*since\_id* is not yet implemented for this resource.)
-*page* is 1 by default and increments by 1 until no more results are
-returned or the parameter *max\_pages* is reached.
+internally so you don’t have to.
 
 See [this article for details about API rate
 limits](https://help.shopify.com/en/api/reference/rest-admin-api-rate-limits).
