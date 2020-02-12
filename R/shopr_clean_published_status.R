@@ -1,3 +1,10 @@
+#' Clean published status
+#'
+#' Helper function to validate and clean published status parameter
+#'
+#' @param published_status one of {'any', 'published', 'unpublished'}
+#' @return string of clean published_status
+
 shopr_clean_published_status <- function(published_status){
 
   if(is.null(published_status)){

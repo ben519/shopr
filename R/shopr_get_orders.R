@@ -54,8 +54,8 @@
 shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, max_pages = Inf, limit_per_page = 250L,
                              ids = NULL, since_id = 0L, created_at_min = NULL, created_at_max = NULL,
                              updated_at_min = NULL, updated_at_max = NULL, processed_at_min = NULL,
-                             processed_at_max = NULL, status = 'any', financial_status = NULL, fulfillment_status = NULL,
-                             fields = NULL, verbose = FALSE){
+                             processed_at_max = NULL, status = 'any', financial_status = NULL,
+                             fulfillment_status = NULL, fields = NULL, verbose = FALSE){
 
   #--- Validate Inputs --------------------------------------
 
@@ -160,7 +160,7 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
   # Parse JSON
   orders <- lapply(responses, function(x){
     data.table::as.data.table(jsonlite::fromJSON(
-      txt = httr::content(x, "text", encoding = "UTF-8", flatten = TRUE)
+      txt = httr::content(x, "text", encoding = "UTF-8", flatten = FALSE)
     )$orders)
   })
 
@@ -171,23 +171,25 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
   isNULLDT <- all.equal(orders, data.table::data.table())
   if(is.logical(isNULLDT) && isNULLDT == TRUE) return(orders)
 
-  # Extract internal data.frames (e.g. line_items) into into standalone data.tables
-  colz <- data.frame(Col = colnames(orders), stringsAsFactors = FALSE)
-  colz$IsList <- sapply(colnames(orders), FUN = function(x) is.list(orders[[x]]), simplify = TRUE)
-  result <- vector(mode = "list", length = sum(colz$IsList) + 1L)
-  names(result) <- c("orders", colz$Col[colz$IsList == TRUE])
-  for(listCol in colz$Col[colz$IsList == TRUE]){
-    tryCatch(expr = {
-      temp <- data.table::rbindlist(orders[[listCol]], use.names = TRUE, fill = TRUE, idcol = "order_row")
-      temp$order_id <- orders$id[temp$order_row]
-      temp$order_row <- NULL
-      data.table::setcolorder(temp, "order_id")
-      result[[listCol]] <- temp
-      data.table::set(x = orders, j = listCol, value = NULL)
-    }, error = function(x) return())
+  ### Extract sub data.frames
+  for(i in seq_along(orders$fulfillments)) orders$fulfillments[[i]]$receipt <- NULL  # this field causes problems
+  extract <- c("discount_applications", "discount_codes", "tax_lines", "line_items", "fulfillments", "refunds",
+               "shipping_lines")
+  result <- vector(mode = "list", length = 1 + length(extract))
+  names(result) <- c("orders", extract)
+  for(df in extract){
+    result[[df]] <- data.table::rbindlist(
+      l = lapply(as.list(orders[[df]]), data.table::as.data.table),
+      use.names = TRUE,
+      fill = TRUE,
+      idcol = TRUE
+    )
+    result[[df]]$order_id <- orders$id[result[[df]]$.id]
   }
-  result$orders <- orders
-  result <- Filter(f = Negate(is.null), x = result)
+
+  # Insert orders into result
+  data.table::set(orders, j = extract, value = NULL)
+  result[["orders"]] <- orders
 
   # Return the result
   return(result[])

@@ -60,7 +60,7 @@ shopr_get_locations <- function(shopURL, APIKey, APIPassword, APIVersion = NULL,
   )$locations
 
   # Convert to data.table
-  data.table::setDT(locations)
+  data.table::as.data.table(locations)
 
   # Return the locations
   return(locations[])

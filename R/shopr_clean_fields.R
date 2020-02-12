@@ -1,3 +1,11 @@
+#' Clean fields
+#'
+#' Helper function to validate validate and clean fields
+#'
+#' @param fields vector of fields
+#' @param resource 'orders' or 'products'
+#' @return string of clean field names separated by a comma
+
 shopr_clean_fields <- function(fields, resource){
   # Validate fields
   # Return NULL or a length-1 character of comma separated feilds

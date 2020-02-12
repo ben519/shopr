@@ -1,3 +1,10 @@
+#' Clean datetime
+#'
+#' Helper function to validate datetimes and convert them to yyyy-mm-ddTHH:MM:SS-00:00
+#'
+#' @param datetime vector of datetimes with class character or POSIXct
+#' @return vector of datetimes in character format like yyyy-mm-ddTHH:MM:SS-00:00
+
 shopr_clean_datetime <- function(datetime){
   # Validate datetimes and convert them to yyyy-mm-ddTHH:MM:SS-00:00
   # format: 2014-04-25T16:15:47-04:00

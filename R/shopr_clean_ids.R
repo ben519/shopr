@@ -1,3 +1,12 @@
+#' Clean ids
+#'
+#' Helper function to validate and clean ids parameter
+#'
+#' @param ids vector of ids or string of comma separated ids
+#' @param resource one of {'orders', 'products', 'inventory'}
+#' @param since_id optional since id value
+#' @return string of clean ids parameter
+
 shopr_clean_ids <- function(ids, resource, since_id = NULL){
   # Validate and clean ids
   # resource can be one of {'orders', 'products', 'inventory'}

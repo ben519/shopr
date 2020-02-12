@@ -1,3 +1,10 @@
+#' Clean order status
+#'
+#' Helper function to validate and clean order status parameter
+#'
+#' @param order_status one of {'open', 'closed', 'any'}
+#' @return string of clean order_status
+
 shopr_clean_order_status <- function(order_status){
 
   if(is.null(order_status)){

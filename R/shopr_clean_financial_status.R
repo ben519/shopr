@@ -1,3 +1,10 @@
+#' Clean financial status
+#'
+#' Helper function to validate and clean financial status parameter
+#'
+#' @param financial_status one of {'any', 'authorized', 'pending', 'paid', 'refunded', 'voided'}
+#' @return string of clean financial_status
+
 shopr_clean_financial_status <- function(financial_status){
 
   if(is.null(financial_status)){

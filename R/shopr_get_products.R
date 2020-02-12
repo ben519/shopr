@@ -170,19 +170,21 @@ shopr_get_products <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, 
   isNULLDT <- all.equal(products, data.table::data.table())
   if(is.logical(isNULLDT) && isNULLDT == TRUE) return(products)
 
-  # Extract internal data.frames (e.g. line_items) into into standalone data.tables
-  colz <- data.frame(Col = colnames(products), stringsAsFactors = FALSE)
-  colz$IsList <- sapply(colnames(products), FUN = function(x) is.list(products[[x]]), simplify = TRUE)
-  result <- vector(mode = "list", length = sum(colz$IsList) + 1L)
-  names(result) <- c("products", colz$Col[colz$IsList == TRUE])
-  for(listCol in colz$Col[colz$IsList == TRUE]){
-    tryCatch(expr = {
-      result[[listCol]] <- data.table::rbindlist(products[[listCol]], use.names = TRUE, fill = TRUE)
-      data.table::set(x = products, j = listCol, value = NULL)
-    }, error = function(x) return())
+  ### Extract sub data.frames
+  extract <- c("variants", "options", "images")
+  result <- vector(mode = "list", length = 1 + length(extract))
+  names(result) <- c("products", extract)
+  for(df in extract){
+    result[[df]] <- data.table::rbindlist(
+      l = lapply(as.list(products[[df]]), data.table::as.data.table),
+      use.names = TRUE,
+      fill = TRUE
+    )
   }
-  result$products <- products
-  result <- Filter(f = Negate(is.null), x = result)
+
+  # Insert products into result
+  data.table::set(products, j = extract, value = NULL)
+  result[["products"]] <- products
 
   # Return the result
   return(result[])
