@@ -172,7 +172,11 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
   if(is.logical(isNULLDT) && isNULLDT == TRUE) return(orders)
 
   # This field causes problems.. remove it
-  for(i in seq_along(orders$fulfillments)) data.table::set(orders$fulfillments[[i]], j = "receipt", value = NULL)
+  for(i in seq_along(orders$fulfillments)){
+    if("receipt" %in% colnames(orders$fulfillments[[i]])){
+      data.table::set(orders$fulfillments[[i]], j = "receipt", value = NULL)
+    }
+  }
 
   ### Extract sub data.frames
   extract <- c("discount_applications", "discount_codes", "tax_lines", "line_items", "fulfillments", "refunds",
