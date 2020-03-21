@@ -148,7 +148,7 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
   )
 
   # Check API version (but only if the user requested a specific version)
-  if(!is.null(APIVersion) && responses[[1L]]$headers$`x-shopify-api-version` != APIVersion){
+  if(isTRUE(responses[[1L]]$headers$`x-shopify-api-version` != APIVersion)){
     warning(paste0(
       "Shopify processed this request with a different API version than the one you requested. ",
       "Requested: ", APIVersion, ", used: ", responses[[1L]]$headers$`x-shopify-api-version`

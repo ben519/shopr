@@ -114,7 +114,7 @@ shopr_get_inventory_levels <- function(shopURL, APIKey, APIPassword, APIVersion 
   responses <- do.call(c, unlist(responses, recursive = FALSE))
 
   # Check API version (but only if the user requested a specific version)
-  if(!is.null(APIVersion) && responses[[1]]$headers$`x-shopify-api-version` != APIVersion){
+  if(isTRUE(responses[[1]]$headers$`x-shopify-api-version` != APIVersion)){
     warning(paste0(
       "Shopify processed this request with a different API version than the one you requested. ",
       "Requested: ", APIVersion, ", used: ", responses[[1]]$headers$`x-shopify-api-version`

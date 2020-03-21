@@ -84,7 +84,7 @@ shopr_get_orders_count <- function(shopURL, APIKey, APIPassword, APIVersion = NU
   )
 
   # Check API version (but only if the user requested a specific version)
-  if(!is.null(APIVersion) && response$headers$`x-shopify-api-version` != APIVersion){
+  if(isTRUE(response$headers$`x-shopify-api-version` != APIVersion)){
     warning(paste0(
       "Shopify processed this request with a different API version than the one you requested. ",
       "Requested: ", APIVersion, ", used: ", response$headers$`x-shopify-api-version`
@@ -94,7 +94,9 @@ shopr_get_orders_count <- function(shopURL, APIKey, APIPassword, APIVersion = NU
   #--- Clean up --------------------------------------
 
   # Parse the response
-  result <- jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))$count
+  result <- jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))
+  if(!is.null(result$errors)) stop(as.character(result$errors))
+  result <- result$count
 
   # Return the result
   return(result)
