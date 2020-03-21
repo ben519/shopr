@@ -8,6 +8,10 @@ the [Shopify REST Admin API](https://help.shopify.com/en/api/reference)
 from R. Currently, shopr only supports *read* operations (i.e. HTTP GET
 requests).
 
+Check out [this
+tutorial](https://www.gormanalysis.com/blog/pulling-shopify-data-into-r-with-shopr/)
+on setting up and using shopr\!
+
 ## Installation
 
 ``` r
