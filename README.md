@@ -5,7 +5,7 @@
 
 shopr is a collection of functions that make it easy to interact with
 the [Shopify REST Admin API](https://help.shopify.com/en/api/reference)
-from R. Currently, shopr only supports *read* operations (i.e. HTTP GET
+from R. Currently, shopr only supports *read* operations (i.e. HTTP GET
 requests).
 
 Check out [this
@@ -16,7 +16,7 @@ on setting up and using shopr\!
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("GormAnalysis/shopr")
+devtools::install_github("ben519/shopr")
 ```
 
 ## Setup
@@ -88,7 +88,7 @@ fields or rows using filter criteria like *created\_at\_min*,
 
 ### Pagination
 
-Some resources (e.g. orders and products) require pagination to return a
+Some resources (e.g. orders and products) require pagination to return a
 large result set. As an example, suppose we have a shop with 1001
 products and we want to fetch every product. Shopify allows a max return
 size of 250 items per query (`limit_per_page = 250`), so we’ll need to
