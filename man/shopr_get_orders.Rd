@@ -73,9 +73,18 @@ range [1, 250]. (default = 250)}
 
 \item{fields}{fields to return. Common fields include:
 
-  \{'id', 'email', 'created_at', 'updated_at', 'total_price', 'currency', 'total_discounts', 'name',
-  'referring_site', 'cancelled_at', 'cancel_reason', 'user_id', 'processed_at', 'order_number', 'tags', 'line_items',
-  'client_details', 'payment_details', 'customer'\}
+  \{"id", "email", "closed_at", "created_at", "updated_at", "number","note", "token", "gateway", "test",
+  "total_price", "subtotal_price","total_weight", "total_tax", "taxes_included", "currency", "financial_status",
+  "confirmed", "total_discounts", "total_line_items_price", "cart_token", "buyer_accepts_marketing", "name",
+  "referring_site", "landing_site", "cancelled_at", "cancel_reason", "total_price_usd", "checkout_token",
+  "reference", "user_id", "location_id", "source_identifier", "source_url", "processed_at", "device_id",
+  "phone", "customer_locale", "app_id", "browser_ip", "landing_site_ref", "order_number", "discount_applications",
+  "discount_codes", "note_attributes", "payment_gateway_names", "processing_method", "checkout_id", "source_name",
+  "fulfillment_status", "tax_lines", "tags", "contact_email", "order_status_url", "presentment_currency",
+  "total_line_items_price_set", "total_discounts_set", "total_shipping_price_set", "subtotal_price_set",
+  "total_price_set", "total_tax_set", "total_tip_received", "admin_graphql_api_id", "line_items", "shipping_lines",
+  "billing_address", "shipping_address", "fulfillments", "client_details", "refunds", "payment_details",
+  "customer"\}
 
   Only top-level fields are supported. (I.e. you can't subset nested fields. For example, you can select 'line_items'
   but not line_items' subfields like 'variant_id' or 'title'.) (default = \code{NULL})}
