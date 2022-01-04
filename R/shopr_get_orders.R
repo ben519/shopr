@@ -180,19 +180,21 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
   isNULLDT <- all.equal(orders, data.table::data.table())
   if(is.logical(isNULLDT) && isNULLDT == TRUE) return(orders)
 
-  # This field causes problems.. remove it
-  for(i in seq_along(orders$fulfillments)){
-    if("receipt" %in% colnames(orders$fulfillments[[i]])){
-      data.table::set(orders$fulfillments[[i]], j = "receipt", value = NULL)
+  # These fields cause problems.. remove them
+  if("fulfillments" %in% colnames(orders)){
+    for(i in seq_along(orders$fulfillments)){
+      if("receipt" %in% colnames(orders$fulfillments[[i]])){
+        data.table::set(orders$fulfillments[[i]], j = "receipt", value = NULL)
+      }
+      if("origin_address" %in% colnames(orders$fulfillments[[i]])){
+        data.table::set(orders$fulfillments[[i]], j = "origin_address", value = NULL)
+      }
     }
   }
 
   ### Extract sub data.frames
-  extract <- intersect(
-    c("discount_applications", "discount_codes", "tax_lines", "line_items", "fulfillments", "refunds", "shipping_lines"),
-    fields
-  )
-
+  subdataframes <- c("discount_applications", "discount_codes", "tax_lines", "line_items", "fulfillments", "refunds", "shipping_lines")
+  extract <- intersect(colnames(orders), subdataframes)
   result <- vector(mode = "list", length = 1 + length(extract))
   names(result) <- c("orders", extract)
   for(df in extract){
@@ -206,7 +208,7 @@ shopr_get_orders <- function(shopURL, APIKey, APIPassword, APIVersion = NULL, ma
   }
 
   # Insert orders into result
-  data.table::set(orders, j = extract, value = NULL)
+  if(length(extract) > 0) data.table::set(orders, j = extract, value = NULL)
   result[["orders"]] <- orders
 
   # Return the result
